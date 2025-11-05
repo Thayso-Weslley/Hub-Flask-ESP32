@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>Hub de Controle ESP32 - Socket.IO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inclui a biblioteca Socket.IO do cliente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Estilo customizado para a estética */
+        body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
+        .main-card { 
+            background-color: #ffffff; 
+            border: 1px solid #d1d5db;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        /* Estilo base para o botão toggle */
+        .toggle-button { 
+            transition: all 0.3s ease; 
+            min-width: 120px; /* Garante tamanho mínimo consistente */
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        .toggle-button:hover { 
+            opacity: 0.9; 
+            transform: translateY(-1px);
+        }
+        .toggle-button:active { 
+            transform: translateY(0); 
+            box-shadow: none;
+        }
+        
+        /* Cor de fundo para o Log */
+        #log-container { 
+            background-color: #1f2937; /* Cinza escuro para contraste */
+            color: #d1d5db; /* Texto claro */
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        #log-container p { margin: 0; padding: 2px 0; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+    <div class="max-w-xl mx-auto rounded-xl main-card p-6 md:p-8">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Hub de Controle IoT (Flask)</h1>
+        <p class="text-gray-600 mb-6">Controle seu ESP32 via Socket.IO</p>
+
+        <!-- Status do Dispositivo -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 mb-6 rounded-lg transition duration-300" id="status-card">
+            <span class="text-lg font-semibold text-gray-700 mb-2 sm:mb-0">ESP-Sala Status:</span>
+            <span id="esp-status" class="px-4 py-1 font-bold rounded-full text-white shadow-md"></span>
+        </div>
+
+        <!-- Botões de Controle (Toggle) -->
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Controle de Relés</h2>
+
+        <div class="flex flex-col gap-4">
+            
+            <!-- Lâmpada (Relé 1) -->
+            <div class="bg-blue-50 rounded-lg p-4 shadow-md hover:shadow-lg transition flex justify-between items-center">
+                <div class="flex items-center">
+                    <!-- Icone de Lâmpada (SVG) -->
+                    <svg id="icon-lamp" class="w-8 h-8 mr-3 text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13A9 9 0 015 12a9 9 0 0118 0 9 9 0 01-9 9"></path></svg>
+                    <div>
+                        <h3 class="font-semibold text-xl text-blue-800">Lâmpada</h3>
+                        <p id="label-lamp" class="text-sm text-gray-500">Relé 1: Desligado</p>
+                    </div>
+                </div>
+                <!-- Botão Toggle -->
+                <button id="btn-lamp" class="toggle-button bg-red-600 text-white" onclick="toggleDevice('lamp')">
+                    Ligar
+                </button>
+            </div>
+
+            <!-- Cooler (Relé 2) -->
+            <div class="bg-yellow-50 rounded-lg p-4 shadow-md hover:shadow-lg transition flex justify-between items-center">
+                <div class="flex items-center">
+                    <!-- Icone de Cooler (SVG) -->
+                    <svg id="icon-cooler" class="w-8 h-8 mr-3 text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l2.5-2.5 2.5 2.5v13m-5-13h5m-5 0l-2.5 2.5V19"></path></svg>
+                    <div>
+                        <h3 class="font-semibold text-xl text-yellow-800">Cooler</h3>
+                        <p id="label-cooler" class="text-sm text-gray-500">Relé 2: Desligado</p>
+                    </div>
+                </div>
+                <!-- Botão Toggle -->
+                <button id="btn-cooler" class="toggle-button bg-red-600 text-white" onclick="toggleDevice('cooler')">
+                    Ligar
+                </button>
+            </div>
+        </div>
+
+        <!-- Log de Mensagens -->
+        <div class="mt-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-2 border-b pb-2">Log do Hub (Cliente Web)</h2>
+            <div id="log-container" class="p-3 h-40 overflow-y-auto rounded-lg resize-y border border-gray-300">
+                <p>Aguardando conexão...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io(); 
+        const statusElement = document.getElementById('esp-status');
+        const statusCard = document.getElementById('status-card');
+        const logContainer = document.getElementById('log-container');
+        
+        // Estado atual dos dispositivos (inicia desligado)
+        let deviceStates = {
+            lamp: 'off',
+            cooler: 'off'
+        };
+        
+        let currentStatus = "{{ initial_status }}"; 
+
+        // --- Funções de UI ---
+
+        function logMessage(message) {
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.prepend(p); 
+
+            while (logContainer.children.length > 20) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        function updateStatusDisplay(status) {
+            statusElement.textContent = status;
+            
+            // Limpa classes de cor anteriores
+            statusElement.className = statusElement.className.replace(/bg-(green|red|yellow)-600/g, ''); 
+            statusCard.className = statusCard.className.replace(/bg-(green|red)-50/g, '');
+            
+            if (status === 'Online') {
+                statusElement.classList.add('bg-green-600');
+                statusCard.classList.add('bg-green-50');
+            } else if (status === 'Offline') {
+                statusElement.classList.add('bg-red-600');
+                statusCard.classList.add('bg-red-50');
+            } else {
+                statusElement.classList.add('bg-yellow-600'); 
+                statusCard.classList.add('bg-yellow-50');
+            }
+        }
+
+        function updateDeviceButton(target, state) {
+            const btn = document.getElementById(`btn-${target}`);
+            const label = document.getElementById(`label-${target}`);
+            const icon = document.getElementById(`icon-${target}`);
+
+            if (!btn) return;
+
+            // Remove classes de cor anteriores
+            btn.classList.remove('bg-green-600', 'bg-red-600');
+            icon.classList.remove('text-yellow-600', 'text-gray-400');
+            
+            if (state === 'on') {
+                btn.textContent = 'Desligar';
+                btn.classList.add('bg-green-600');
+                label.textContent = `Relé ${target === 'lamp' ? 1 : 2}: Ligado`;
+                icon.classList.add('text-yellow-600'); // Icone mais vibrante quando ligado
+            } else {
+                btn.textContent = 'Ligar';
+                btn.classList.add('bg-red-600');
+                label.textContent = `Relé ${target === 'lamp' ? 1 : 2}: Desligado`;
+                icon.classList.add('text-gray-400'); // Icone mais discreto quando desligado
+            }
+            
+            // Atualiza o estado interno
+            deviceStates[target] = state;
+        }
+
+        // Inicializa o estado visual de todos os dispositivos como 'off'
+        updateDeviceButton('lamp', 'off');
+        updateDeviceButton('cooler', 'off');
+
+
+        // --- Funções de Comunicação ---
+
+        function toggleDevice(target) {
+            if (currentStatus !== 'Online') {
+                logMessage('❌ Erro: ESP32 está Offline. Não é possível enviar comandos.');
+                return;
+            }
+
+            // Determina o próximo estado
+            const currentState = deviceStates[target];
+            const nextState = currentState === 'on' ? 'off' : 'on';
+
+            // Atualiza a UI imediatamente para feedback rápido
+            updateDeviceButton(target, nextState); 
+
+            // O evento 'web_command' é enviado ao Flask
+            socket.emit('web_command', { target: target, state: nextState });
+            logMessage(`Comando enviado: ${target.toUpperCase()} -> ${nextState.toUpperCase()}`);
+        }
+        
+        // --- Setup e Event Listeners ---
+        
+        // Inicia a exibição do status com o valor inicial injetado pelo Flask
+        updateStatusDisplay(currentStatus);
+
+
+        // Evento: O status do ESP32 mudou (recebido do Flask)
+        socket.on('esp_status_update', (data) => {
+            currentStatus = data.status;
+            updateStatusDisplay(data.status);
+            logMessage(`✅ Status atualizado: ESP32 agora está ${data.status}.`);
+        });
+
+        // Evento: Recebe mensagens de status ou confirmação do Hub (Flask)
+        socket.on('status_update', (data) => {
+            logMessage(`⚙️ HUB: ${data.message}`);
+            // Não precisamos reverter o estado aqui, pois assumimos que o comando foi bem-sucedido.
+            // Para um sistema mais robusto, o ESP32 deveria responder com o estado atual.
+        });
+
+        // Evento: Conectado ao servidor Flask
+        socket.on('connect', () => {
+            logMessage(`🌐 Conectado ao Flask Hub (SID: ${socket.id}).`);
+            if (currentStatus === "") {
+                updateStatusDisplay('Online'); 
+            }
+        });
+        
+        // Evento: Desconectado do servidor Flask
+        socket.on('disconnect', () => {
+            logMessage('🚫 Desconectado do Flask Hub.');
+        });
+
+    </script>
+</body>
+</html>
