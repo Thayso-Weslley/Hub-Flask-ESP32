@@ -148,6 +148,6 @@ def handle_web_command(data):
 
 if __name__ == '__main__':
     print("\n[INÍCIO] Servidor Flask-SocketIO rodando na porta 5000...")
-    print("Acesse no navegador: http://192.168.1.108:5000")
+    print("Acesse no navegador: http://192.168.1.201:5000")
     print("Usuário/Senha de Teste: admin / 123456")
     socketio.run(app, host='0.0.0.0', port=5000)

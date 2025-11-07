@@ -20,13 +20,13 @@
 // ======================================================================
 const char* ssid = "Omega_New-Fibra_2.4G";
 const char* password = "demi1234";
-const char* socket_host = "192.168.1.108"; // IP do Hub (Confirmado pelo celular)
+const char* socket_host = "192.168.1.201"; // IP do Hub (Confirmado pelo celular)
 const uint16_t socket_port = 5000;
 const char* deviceName = "ESP-Sala";      
 // ======================================================================
 
-#define RELAY_LAMP_PIN 22
-#define RELAY_COOLER_PIN 21
+#define RELAY_LAMP_PIN 23
+#define RELAY_COOLER_PIN 22
 
 // Instância APENAS da biblioteca WebSockets
 WebSocketsClient webSocket;
