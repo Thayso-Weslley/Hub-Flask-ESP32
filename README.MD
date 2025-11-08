@@ -47,15 +47,18 @@ git clone <URL_DO_SEU_REPOSITÓRIO>
 cd <nome-do-diretorio>
 
 # 2. Criar e ativar o ambiente virtual (Exemplo Linux/macOS):
-python3 -m venv venv
+python -m venv venv
+
+# 2.1. Se for Linux/macOS, use:
 source venv/bin/activate
 
-# (Para Windows, use:
-.\venv\Scripts\activate)
+# 2.1. Se for Windows, use:
+.\venv\Scripts\activate
 
 # 3. Instalar dependências:
-pip install Flask flask-socketio
+pip install -r requirements.txt
 ```
+💡 Dica: O arquivo requirements.txt contém todas as bibliotecas necessárias (como Flask, Flask-SocketIO, python-socketio, etc.), permitindo configurar o ambiente completo em um só comando.
 
 ## Estrutura de Arquivos
 ```
