@@ -168,6 +168,7 @@ def handle_web_command(data):
     emit('full_device_update', get_clean_device_list(), broadcast=True)
 
 
+# --- Execução do Servidor ---
 if __name__ == '__main__':
     print("\n[INÍCIO] Servidor Flask-SocketIO (Dinâmico) rodando...")
     print(f"Acesse o Hub em http://SEU_IP_FIXO:5000")
