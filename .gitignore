@@ -1,0 +1,59 @@
+# =========================
+# 🐍 .gitignore - Projeto Python / Flask
+# =========================
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Dependências compiladas
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Arquivos temporários
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.tmp
+*.bak
+*.swp
+
+# Configurações de IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Cache de pacotes / build
+pip-wheel-metadata/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Arquivos de ambiente / segredos
+.env
+*.env
+.env.*
+
+# Arquivos de banco de dados (se forem locais)
+instance/
+*.db
+*.sqlite3
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+
+# Arquivos de teste
+.coverage
+htmlcov/
+.tox/
+pytest_cache/
