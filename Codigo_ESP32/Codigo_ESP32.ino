@@ -1,40 +1,79 @@
-/*
- * CÓDIGO CLIENTE FINAL PARA ESP32 (C++)
- * VERSÃO 7.8: Remoção do Teste TCP Auxiliar.
- *
- * Objetivo: Forçar o uso direto do WebSocketsClient.begin() para evitar
- * falhas de buffer/alocação no WiFiClient auxiliar.
- *
- * Se a conexão falhar agora, é definitivamente um problema de protocolo/handshake
- * que o Flask já deveria ter reportado com sucesso.
- */
-
 // --- Bibliotecas ---
 #include <WiFi.h>
-#include <WebSocketsClient.h> // A única biblioteca de WebSocket necessária (Links2004)
+#include <WebSocketsClient.h> 
 #include <ArduinoJson.h>
 #include <WiFiClient.h> 
+#include <WiFiManager.h> // Para gerenciamento dinâmico do Wi-Fi
 
 // ======================================================================
-// --- CONFIGURAÇÕES ---
+// --- CONFIGURAÇÕES DE APLICAÇÃO E PINAGEM ---
 // ======================================================================
-const char* ssid = "Omega_New-Fibra_2.4G";
-const char* password = "demi1234";
-const char* socket_host = "192.168.1.201"; // IP do Hub (Confirmado pelo celular)
-const uint16_t socket_port = 5000;
-const char* deviceName = "ESP-Quarto";      
-// ======================================================================
+const char* socket_host = "192.168.1.201"; // colocar IP de conexão ao servidor WebHub
+const uint16_t socket_port = 5000; // Porta host entre o Servidor Local e o ESP
+const char* deviceName = "Quarto"; // Nome do ESP no WebHub
 
+// --- Pinos de I/O ---
 #define RELAY_LAMP_PIN 23
 #define RELAY_COOLER_PIN 22
 
-// Instância APENAS da biblioteca WebSockets
+// Pinos dos LEDs de Status (Seus Pinos Personalizados)
+const int LED_RED_PIN = 19;   // Vermelho: Wi-Fi Desconectado / Modo Config
+const int LED_YELLOW_PIN = 18;  // Amarelo: Wi-Fi OK, Hub Desconectado
+const int LED_GREEN_PIN = 17;   // Verde: Conexão Completa
+
+// NOVO: Pino para o Botão de Reset
+// O GPIO 0 é ideal, pois força o chip a entrar no modo flash (BOOT) se estiver LOW na inicialização.
+// Mas aqui, vamos usá-lo apenas para resetar após a inicialização normal.
+#define RESET_BUTTON_PIN 0 
+const unsigned long RESET_HOLD_TIME_MS = 3000; // Segurar por 3 segundos
+// ======================================================================
+
+// --- Variáveis de Estado Globais ---
 WebSocketsClient webSocket;
-
-// Variável de estado para controlar o handshake
 bool socketIOSessionStarted = false;
+unsigned long resetStartTime = 0; // Contador de tempo para o reset
 
-// --- Função de tratamento de eventos da biblioteca WebSockets ---
+// Instância Global do WiFiManager (Necessária para chamar resetSettings() no loop)
+WiFiManager wm;
+
+// NOVO: Enum para o estado dos LEDs
+enum ConnectionState {
+    STATE_WIFI_DISCONNECTED = 0, // Vermelho
+    STATE_HUB_DISCONNECTED = 1,  // Amarelo
+    STATE_HUB_CONNECTED = 2      // Verde
+};
+
+// NOVO: Função para controlar os LEDs de Status (Atualizada para Piscar no Reset)
+void setStatusLed(ConnectionState state) {
+    // Apaga todos os LEDs
+    digitalWrite(LED_RED_PIN, LOW);
+    digitalWrite(LED_YELLOW_PIN, LOW);
+    digitalWrite(LED_GREEN_PIN, LOW);
+
+    switch (state) {
+        case STATE_WIFI_DISCONNECTED:
+             // Se o botão estiver pressionado (resetStartTime > 0), faz o LED piscar
+            if (resetStartTime > 0 && (millis() / 250) % 2 == 0) { 
+                // Permite piscar (LOW se for par, HIGH se for ímpar)
+                digitalWrite(LED_RED_PIN, LOW);
+            } else {
+                digitalWrite(LED_RED_PIN, HIGH);
+            }
+            Serial.println("STATUS LED: [VERMELHO] - Wi-Fi Desconectado / Modo de Configuração.");
+            break;
+        case STATE_HUB_DISCONNECTED:
+            digitalWrite(LED_YELLOW_PIN, HIGH);
+            Serial.println("STATUS LED: [AMARELO] - Wi-Fi Conectado. Buscando Hub...");
+            break;
+        case STATE_HUB_CONNECTED:
+            digitalWrite(LED_GREEN_PIN, HIGH);
+            Serial.println("STATUS LED: [VERDE] - Conexão Completa: Wi-Fi + Hub.");
+            break;
+    }
+}
+
+
+// --- Função de tratamento de eventos da biblioteca WebSockets (INALTERADA) ---
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
     String msg = (payload != NULL) ? String((char*)payload) : "";
@@ -43,36 +82,32 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         case WStype_DISCONNECTED:
             Serial.println("[WebSocket] DESCONECTADO!");
             socketIOSessionStarted = false;
+            if (WiFi.status() == WL_CONNECTED) {
+                setStatusLed(STATE_HUB_DISCONNECTED); 
+            }
             break;
         
         case WStype_CONNECTED:
             Serial.printf("\n[WebSocket] CONECTADO ao URL: %s\n", payload);
             Serial.println("[Handshake] Aguardando pacote '0' (Open) do Servidor...");
-            // ESPERAMOS o pacote '0' para iniciar o handshake do Socket.IO
             break;
         
         case WStype_TEXT:
             Serial.printf("[Msg Recebida] Payload Bruto: %s\n", msg.c_str());
             
-            // =======================================================
             // --- LÓGICA DE HANDSHAKE SOCKET.IO (EIO=4) ---
-            // =======================================================
-
-            // 1. Servidor envia "0" (Pacote OPEN)
             if (msg.startsWith("0")) {
                 Serial.println("[Handshake] Pacote '0' (Open) recebido.");
                 Serial.println("[Handshake] Enviando pacote '40' (Namespace Connect)...");
-                // Responda com "40" (Solicitação de Namespace Padrão)
                 webSocket.sendTXT("40");
             }
-            
-            // 2. Servidor responde com "40" (Namespace Conectado)
             else if (msg.startsWith("40")) {
                 Serial.println("[Handshake] Pacote '40' (Namespace OK) recebido.");
                 Serial.println("[Handshake] SESSÃO SOCKET.IO ESTABELECIDA!");
                 socketIOSessionStarted = true;
                 
-                // AGORA sim, podemos nos registrar (Pacote 42)
+                setStatusLed(STATE_HUB_CONNECTED); 
+                
                 StaticJsonDocument<64> dataDoc;
                 dataDoc["name"] = deviceName;
                 String dataJson;
@@ -82,10 +117,8 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
                 Serial.printf("[Registro] Enviando pacote Socket.IO: %s\n", packet.c_str());
                 webSocket.sendTXT(packet);
             }
-
             // 3. Servidor envia um evento (Pacote "42")
             else if (msg.startsWith("42")) {
-                // Payload recebido: 42["event_name", {DATA_OBJECT}]
                 String jsonContent = msg.substring(2); 
 
                 DynamicJsonDocument doc(256);
@@ -103,7 +136,6 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
                     if (strcmp(eventName, "command_to_esp") == 0) {
                         const char* target = data["target"] | ""; 
                         const char* state = data["state"] | "";
-                        // Active LOW (Relé desliga com HIGH, liga com LOW)
                         int newState = (strcmp(state, "on") == 0) ? LOW : HIGH; 
 
                         if (strcmp(target, "lamp") == 0) {
@@ -115,7 +147,6 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
                             digitalWrite(RELAY_COOLER_PIN, newState);
                         }
                     } else if (strcmp(eventName, "status") == 0) {
-                        // Recebe o status de volta do Flask (exemplo de confirmação)
                         const char* message = data["message"] | "Mensagem vazia";
                         Serial.printf("[Status Hub] %s\n", message);
                     }
@@ -125,20 +156,19 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
             // 4. Servidor envia PING (Pacote "2")
             else if (msg == "2") {
                 Serial.println("[Ping] Ping (2) recebido. Enviando Pong (3)...");
-                // Responda com PONG (Pacote "3")
                 webSocket.sendTXT("3");
             }
             
-            break; // Fim do WStype_TEXT
+            break; 
 
         case WStype_ERROR:
             Serial.printf("[WebSocket] Erro: %s\n", payload);
+            if (WiFi.status() == WL_CONNECTED) {
+                 setStatusLed(STATE_HUB_DISCONNECTED); 
+            }
             break;
         case WStype_PING: 
-            Serial.println("[WebSocket] PING Recebido (Camada WS).");
-            break;
         case WStype_PONG:
-            Serial.println("[WebSocket] PONG Recebido (Camada WS).");
             break;
         default:
             break;
@@ -148,32 +178,45 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("\nInicializando ESP32 (WebSocket Puro - V7.8 - Conexão Limpa)...");
+    Serial.println("\nInicializando ESP32 (WebSocket Puro - V8.1 - Reset Manual)...");
 
+    // 1. Inicializa pinos I/O
     pinMode(RELAY_LAMP_PIN, OUTPUT);
     pinMode(RELAY_COOLER_PIN, OUTPUT);
-    digitalWrite(RELAY_LAMP_PIN, HIGH); // Relés iniciam DESLIGADOS (Active LOW)
+    digitalWrite(RELAY_LAMP_PIN, HIGH); // Relés OFF (Active LOW)
     digitalWrite(RELAY_COOLER_PIN, HIGH);
 
-    Serial.printf("Conectando em %s ", ssid);
-    WiFi.begin(ssid, password); 
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.println("\n[WiFi] Conectado!");
-    Serial.print("[WiFi] Endereço IP do ESP32: ");
-    Serial.println(WiFi.localIP());
+    pinMode(LED_RED_PIN, OUTPUT);
+    pinMode(LED_YELLOW_PIN, OUTPUT);
+    pinMode(LED_GREEN_PIN, OUTPUT);
+    setStatusLed(STATE_WIFI_DISCONNECTED); // Inicia VERMELHO
 
-    // =================================================================
-    // --- CONEXÃO DIRETA WEB SOCKET ---
-    // =================================================================
+    // NOVO: Inicializa o pino do botão de reset com PULL-UP interno
+    // O pino será HIGH por padrão, e LOW quando pressionado/conectado ao GND.
+    pinMode(RESET_BUTTON_PIN, INPUT_PULLUP);
+    
+    // 2. Conexão Wi-Fi usando WiFiManager
+    String ap_name = "Config-Hub_" + String(deviceName);
+    Serial.printf("[WiFiManager] Iniciando Configuração Wi-Fi: AP = %s\n", ap_name.c_str());
+
+    // Se autoConnect falhar, ele cria o AP. Se for bem-sucedido, conecta e continua.
+    if (wm.autoConnect(ap_name.c_str())) {
+        Serial.println("[WiFiManager] Conexão Wi-Fi OK!");
+        Serial.print("[WiFiManager] Endereço IP do ESP32: ");
+        Serial.println(WiFi.localIP());
+        setStatusLed(STATE_HUB_DISCONNECTED); // Amarelo
+    } else {
+        Serial.println("[WiFiManager] Falha ao conectar/configurar. Reiniciando em 5s...");
+        // Mantém Vermelho
+        delay(5000);
+        ESP.restart(); 
+    }
+
+
+    // 3. CONEXÃO WEB SOCKET
     Serial.printf("[Conexão] Tentando iniciar WebSocket em ws://%s:%d/socket.io/?EIO=4...\n", socket_host, socket_port);
     
-    // Adiciona o cabeçalho User-Agent 
     webSocket.setExtraHeaders("User-Agent: ESP32-Client\r\n");
-    
-    // A própria função begin() fará o handshake TCP e a requisição WebSocket
     webSocket.begin(socket_host, socket_port, "/socket.io/?EIO=4&transport=websocket"); 
 
     webSocket.onEvent(webSocketEvent);
@@ -181,5 +224,51 @@ void setup() {
 }
 
 void loop() {
+    // --- LÓGICA DE RESET MANUAL ---
+    // Checa se o botão está pressionado (LOW, pois usamos PULLUP)
+    if (digitalRead(RESET_BUTTON_PIN) == LOW) { 
+        if (resetStartTime == 0) {
+            resetStartTime = millis();
+            Serial.println("[Reset] Botão pressionado. Segure por 3 segundos para resetar...");
+        }
+        
+        // Se o tempo de espera foi atingido
+        if (millis() - resetStartTime > RESET_HOLD_TIME_MS) {
+            Serial.println("\n[RESET FORÇADO] Credenciais do Wi-Fi apagadas! Reiniciando...");
+            // Apaga o SSID e senha salvos no NVS.
+            wm.resetSettings(); 
+            // Reinicia o ESP32 para entrar no modo AP na próxima inicialização.
+            ESP.restart(); 
+        }
+         // Chama setStatusLed para piscar o Vermelho enquanto segura o botão
+         setStatusLed(STATE_WIFI_DISCONNECTED); 
+
+    } else {
+        // Se o botão for solto, zera o contador
+        resetStartTime = 0; 
+    }
+    
+    // --- LÓGICA DE CONEXÃO E PING ---
     webSocket.loop(); 
+
+    // NOVO: Lógica de reconexão Wi-Fi
+    if (WiFi.status() != WL_CONNECTED) {
+        // Usa uma variável estática para evitar flood na serial
+        static bool wasConnected = true; 
+        if (wasConnected) {
+            Serial.println("[WiFi] Conexão Wi-Fi Perdida. Tentando reconectar...");
+            setStatusLed(STATE_WIFI_DISCONNECTED); // Vermelho
+            wasConnected = false;
+        }
+
+        // Tenta reconectar com as credenciais salvas.
+        WiFi.begin(); 
+        delay(100); 
+
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("[WiFi] Reconectado.");
+            setStatusLed(STATE_HUB_DISCONNECTED); // Amarelo
+            wasConnected = true;
+        }
+    }
 }
