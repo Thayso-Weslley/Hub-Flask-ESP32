@@ -22,7 +22,7 @@ const char* ssid = "Omega_New-Fibra_2.4G";
 const char* password = "demi1234";
 const char* socket_host = "192.168.1.201"; // IP do Hub (Confirmado pelo celular)
 const uint16_t socket_port = 5000;
-const char* deviceName = "ESP-Sala";      
+const char* deviceName = "ESP-Quarto";      
 // ======================================================================
 
 #define RELAY_LAMP_PIN 23

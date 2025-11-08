@@ -1,20 +1,18 @@
-/*
- * Arquivo: styles.css
- * Contém os estilos customizados para a interface do Hub de Controle.
- * O restante do layout e design é tratado diretamente pelas classes do Tailwind CSS.
- */
-
-body { 
-    /* A fonte Inter é carregada automaticamente pelo script do Tailwind */
-    font-family: 'Inter', sans-serif; 
-    background-color: #e5e7eb; 
-}
-
+/* Estilo customizado para a estética */
+body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
 .main-card { 
     background-color: #ffffff; 
     border: 1px solid #d1d5db;
-    /* Box shadow do Tailwind, mas customizado aqui */
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.ESP-container {
+    background-color: #f9fafb; 
+    border: 1px solid #d1d5db; 
+    padding: 1.5rem; 
+    border-radius: 0.5rem; 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
 }
 
 /* Estilo base para o botão toggle */
@@ -38,7 +36,7 @@ body {
     box-shadow: none;
 }
 
-/* Cor de fundo e tipografia para o Log */
+/* Cor de fundo para o Log */
 #log-container { 
     background-color: #1f2937; /* Cinza escuro para contraste */
     color: #d1d5db; /* Texto claro */
@@ -46,7 +44,4 @@ body {
     line-height: 1.25rem;
 }
 
-#log-container p { 
-    margin: 0; 
-    padding: 2px 0; 
-}
+#log-container p { margin: 0; padding: 2px 0; }
