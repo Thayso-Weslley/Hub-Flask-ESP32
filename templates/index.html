@@ -6,58 +6,32 @@
     <!-- Biblioteca Socket.IO do cliente -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../static/css/style.css" rel="stylesheet">
+    
+    <!-- Corrigindo o caminho do CSS para a estrutura padrão do Flask -->
+    <!-- (Flask procura 'static/css/style.css' e não '../static/css/style.css') -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 </head>
 <body class="p-4 md:p-8 min-h-screen">
     <div class="max-w-xl mx-auto rounded-xl main-card p-6 md:p-8">
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Hub de Controle IoT (Flask)</h1>
-        <p class="text-gray-600 mb-6">Controle seu ESP32 via Socket.IO</p>
-
-        <section class="ESP-container">
-             <!-- Status do Dispositivo -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 mb-6 rounded-lg transition duration-300" id="status-card">
-                <span class="text-lg font-semibold text-gray-700 mb-2 sm:mb-0">ESP-Sala Status:</span>
-                <span id="esp-status" class="px-4 py-1 font-bold rounded-full text-white shadow-md"></span>
+        
+        <!-- Cabeçalho (com usuário logado, vindo do app.py) -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Hub de Controle IoT</h1>
+                <p class="text-gray-600">Olá, <span class="font-semibold">{{ username }}</span>!</p>
             </div>
+            <a href="{{ url_for('logout') }}" class="text-sm font-medium text-blue-600 hover:text-blue-800">Sair</a>
+        </div>
 
-            <!-- Botões de Controle -->
-                <div class="flex flex-col gap-4">
-                
-                <!-- Lâmpada (Relé 1) -->
-                <div class="bg-blue-50 rounded-lg p-4 shadow-md hover:shadow-lg transition flex justify-between items-center">
-                    <div class="flex items-center">
-                        <svg id="icon-lamp" class="w-8 h-8 mr-3 text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13A9 9 0 015 12a9 9 0 0118 0 9 9 0 01-9 9"></path>
-                        </svg>
-                        <div>
-                            <h3 class="font-semibold text-xl text-blue-800">Lâmpada</h3>
-                            <p id="label-lamp" class="text-sm text-gray-500">Relé 1: Desligado</p>
-                        </div>
-                    </div>
-                    <button id="btn-lamp" class="toggle-button bg-red-600 text-white" onclick="toggleDevice('lamp')">
-                        Ligar
-                    </button>
-                </div>
-
-                <!-- Cooler (Relé 2) -->
-                <div class="bg-yellow-50 rounded-lg p-4 shadow-md hover:shadow-lg transition flex justify-between items-center">
-                    <div class="flex items-center">
-                        <svg id="icon-cooler" class="w-8 h-8 mr-3 text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l2.5-2.5 2.5 2.5v13m-5-13h5m-5 0l-2.5 2.5V19"></path>
-                        </svg>
-                        <div>
-                            <h3 class="font-semibold text-xl text-yellow-800">Cooler</h3>
-                            <p id="label-cooler" class="text-sm text-gray-500">Relé 2: Desligado</p>
-                        </div>
-                    </div>
-                    <button id="btn-cooler" class="toggle-button bg-red-600 text-white" onclick="toggleDevice('cooler')">
-                        Ligar
-                    </button>
-                </div>
-            </div>
+        <!-- 
+          CONTÊINER DINÂMICO 
+          O JavaScript (main.js) irá preencher esta seção com os bloquinhos
+          ou com a mensagem "Nenhum microcontrolador encontrado...".
+        -->
+        <section id="dashboard-container" class="flex flex-col gap-6">
+            <!-- Os bloquinhos .ESP-container serão inseridos aqui -->
         </section>
-       
-
+        
         <!-- Log -->
         <div class="mt-8">
             <h2 class="text-xl font-bold text-gray-800 mb-2 border-b pb-2">Log do Hub (Cliente Web)</h2>
@@ -67,10 +41,10 @@
         </div>
     </div>
 
-    <!-- JavaScript externo -->
-    <script>
-        const initialStatus = "{{ initial_status }}";
-    </script>
-    <script src="../static/js/main.js"></script>
+    <!-- 
+      Variável 'initialStatus' removida, pois não é mais necessária.
+      O JavaScript agora obtém o status do evento 'full_device_update'.
+    -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

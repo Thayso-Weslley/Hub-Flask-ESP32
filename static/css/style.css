@@ -1,21 +1,27 @@
+body {
+    background-color: #f3f4f6; /* Fundo claro e suave */
+}
+
 /* Estilo customizado para a estética */
-body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
 .main-card { 
     background-color: #ffffff; 
     border: 1px solid #d1d5db;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
+/* Este é o "Bloquinho" que o JavaScript irá criar dinamicamente 
+  para CADA ESP conectado.
+*/
 .ESP-container {
-    background-color: #f9fafb; 
+    background-color: #f9fafb; /* Um fundo levemente diferente */
     border: 1px solid #d1d5db; 
     padding: 1.5rem; 
-    border-radius: 0.5rem; 
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+    border-radius: 0.75rem; /* Um pouco mais arredondado */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem; /* Espaçamento entre os bloquinhos */
 }
 
-/* Estilo base para o botão toggle */
+/* Estilo base para o botão toggle (Mantido) */
 .toggle-button { 
     transition: all 0.3s ease; 
     min-width: 120px; /* Garante tamanho mínimo consistente */
@@ -36,7 +42,7 @@ body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
     box-shadow: none;
 }
 
-/* Cor de fundo para o Log */
+/* Cor de fundo para o Log (Mantido) */
 #log-container { 
     background-color: #1f2937; /* Cinza escuro para contraste */
     color: #d1d5db; /* Texto claro */
