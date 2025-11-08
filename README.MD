@@ -3,18 +3,17 @@
 
 ## 🏠 Hub de Controle IoT: Flask + ESP32 (Socket.IO)
 
-Este projeto implementa um sistema de controle de dispositivos IoT em tempo real, utilizando Flask como servidor web/Hub de comunicação e um ESP32 como o dispositivo de campo para acionamento de relés. A comunicação bidirecional e de baixa latência é garantida pelo Socket.IO.
+Este projeto implementa um sistema de controle de dispositivos IoT em tempo real, utilizando **Flask** como servidor web/Hub de comunicação e um **ESP32** como o dispositivo de campo para acionamento de relés. A comunicação bidirecional e de baixa latência é garantida pelo **Socket.IO**.
 
 ## 🚀 Tecnologias Utilizadas
 
 | Componente      | Linguagem/Plataforma | Dependências Chave             | Função Principal |
 |------------------|----------------------|---------------------------------|------------------|
-| **Hub/Backend**  | Python (Flask)       | Flask-SocketIO, python-socketio | Servidor Web, gerenciamento de status (Online/Offline) e roteamento de comandos. |
-| **Frontend/UI**  | JavaScript, HTML, CSS | Socket.IO Client, Tailwind CSS  | Interface de usuário responsiva e envio/recebimento de comandos em tempo real. |
-| **Dispositivo**  | C++ (Arduino)        | WiFiManager, SocketIOClient     | Conexão Wi-Fi portátil, recebimento de comandos e controle de GPIO (Relés). |
-
-
+| **Hub/Backend**  | Python (Flask)       | ``Flask-SocketIO``, ``python-socketio`` | Servidor Web, gerenciamento de status (Online/Offline) e roteamento de comandos. |
+| **Frontend/UI**  | JavaScript, HTML, CSS | ``Socket.IO Client``, Tailwind CSS  | Interface de usuário responsiva e envio/recebimento de comandos em tempo real. |
+| **Dispositivo**  | C++ (Arduino)        | ``WiFiManager``, ``SocketIOClient``     | Conexão Wi-Fi portátil, recebimento de comandos e controle de GPIO (Relés). |
 ---
+
 
 📐 Arquitetura do Sistema
 ---
@@ -58,8 +57,7 @@ source venv/bin/activate
 pip install Flask flask-socketio
 ```
 
-Estrutura de Arquivos
----
+## Estrutura de Arquivos
 ```
 ├── app.py              # Aplicação Flask principal e lógica Socket.IO
 ├── README.md           # Este arquivo
@@ -72,18 +70,18 @@ Estrutura de Arquivos
     └── styles.css      # Estilos customizados
 ```
 
-Execução
----
+## Execução
 
 Para iniciar o servidor Flask:
+
 ```
 python app.py
 ```
 
 O Hub estará disponível em http://127.0.0.1:5000 (ou na porta configurada).
 
-💻 Configuração do Firmware (ESP32)
----
+## 💻 Configuração do Firmware (ESP32)
+
 ### Pré-requisitos
 - Arduino IDE ou VS Code com extensão PlatformIO.
 - Placa ESP32 configurada.
@@ -98,7 +96,7 @@ Instale as seguintes bibliotecas através do Gerenciador de Bibliotecas da IDE:
 
 ### Portabilidade Wi-Fi
 ---
-O uso do `WiFiManager` garante a portabilidade. Na primeira execução, o ESP32 criará um Ponto de Acesso (AP) chamado `ESP32_HUB_SETUP`.
+O uso do ``WiFiManager`` garante a portabilidade. Na primeira execução, o ESP32 criará um Ponto de Acesso (AP) chamado ``ESP32_HUB_SETUP``.
 
 1. Conecte-se a esse AP via celular ou computador.
 
@@ -109,12 +107,12 @@ O uso do `WiFiManager` garante a portabilidade. Na primeira execução, o ESP32 
 4. O ESP32 salvará as credenciais e reiniciará, conectando-se automaticamente.
 
 ### Lógica de Conexão
-O firmware deve ser configurado para apontar para o IP do seu servidor Flask (ex: `http://192.168.1.10:5000`) após a conexão bem-sucedida do `WiFiManager`.
+O firmware deve ser configurado para apontar para o IP do seu servidor Flask (ex: ``http://192.168.1.10:5000``) após a conexão bem-sucedida do ``WiFiManager``.
 
 Eventos Chave no ESP32:
 
 | **Evento** | **Direção** | **Propósito** |
 |----|----|----|
-| `connect` | ESP32 -> Flask | Notifica o Hub que o dispositivo está online. |
-| `web_command` | Flask -> ESP32 | Recebe o JSON de comando (`{"target": "lamp", "state": "on"}`). |
-| `status_update` | ESP32 -> Flask | Opcional: Envia confirmação de que o comando foi executado. |
+| ``connect`` | ESP32 -> Flask | Notifica o Hub que o dispositivo está online. |
+| ``web_command`` | Flask -> ESP32 | Recebe o JSON de comando (``{"target": "lamp", "state": "on"}``). |
+| ``status_update`` | ESP32 -> Flask | Opcional: Envia confirmação de que o comando foi executado. |
