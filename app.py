@@ -8,8 +8,8 @@ app.config['SECRET_KEY'] = 'uma_chave_secreta_forte'
 
 # Credenciais de demonstração
 USERS = {
-    "admin": "123456",
-    "user": "password"
+    "admin": "123456", # Usuário
+    "user": "password" # Senha
 }
 
 socketio = SocketIO(app, 
@@ -26,7 +26,6 @@ socketio = SocketIO(app,
 connected_devices = {}
 
 # --- Rotas HTTP (Autenticação - Sem Mudanças) ---
-
 @app.route('/')
 def index():
     if 'logged_in' not in session:
