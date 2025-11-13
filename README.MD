@@ -31,6 +31,10 @@ O sistema opera em uma arquitetura centralizada onde o servidor Flask atua como 
 
 6. **Feedback:** O ESP32 aciona o relé e pode opcionalmente enviar uma confirmação de volta ao Flask, que a exibe no log da interface web.
 
+## Fluxograma
+
+![Logo do Projeto](./static/img/fluxograma.svg)
+
 ## 🛠️ Configuração do Backend (Flask Hub)
 
 ### Pré-requisitos
