@@ -8,9 +8,9 @@
 // ======================================================================
 // --- CONFIGURAÇÕES DE APLICAÇÃO E PINAGEM ---
 // ======================================================================
-const char* socket_host = "192.168.1.201"; // colocar IP de conexão ao servidor WebHub
+const char* socket_host = "192.168.207.187"; // colocar IP de conexão ao servidor WebHub
 const uint16_t socket_port = 5000; // Porta host entre o Servidor Local e o ESP
-const char* deviceName = "Quarto"; // Nome do ESP no WebHub
+const char* deviceName = "Sala 0"; // Nome do ESP no WebHub
 
 // --- Pinos de I/O ---
 #define RELAY_LAMP_PIN 23
