@@ -57,7 +57,7 @@ python -m venv venv
 # Ative: source venv/bin/activate (Linux/macOS) ou .\venv\Scripts\activate (Windows)
 
 # 3. Instalar dependências Python do WebHub:
-pip install -r requirements.txt
+pip install -r ./dependencias/requirements.txt
 
 # 4. Instalar o PlatformIO Core (CLI):
 pip install platformio
