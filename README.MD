@@ -88,7 +88,7 @@ pio run -t upload
 **Ação do Comando:** Substitui a Arduino IDE, compilando o código C++ e gravando o binário na memória Flash do ESP32.
 
 ### Portabilidade Wi-Fi (WiFiManager)
----
+
 Na **primeira execução**, o ESP32 cria um Ponto de Acesso (AP). Conecte-se a ele (`ESP32_HUB_SETUP`), configure o Wi-Fi e o Hub. O ESP32 salva as credenciais, reinicia e se conecta automaticamente.
 
 | **Evento** | **Direção** | **Propósito** |
