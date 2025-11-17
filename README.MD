@@ -80,7 +80,7 @@ python app.py
 
 2. O arquivo platformio.ini gerencia automaticamente a plataforma e as dependências C++.
 
-3. Execute o comando de build e upload no terminal (dentro da pasta raiz do projeto):
+3. Execute o comando de build e upload no terminal (dentro da pasta `./depencias` do projeto):
 
 ```
 pio run -t upload
@@ -97,12 +97,14 @@ Na **primeira execução**, o ESP32 cria um Ponto de Acesso (AP). Conecte-se a e
 | ``web_command`` | Flask -> ESP32 | Recebe o JSON de comando (``{"target": "lamp", "state": "on"}``). |
 | ``status_update`` | ESP32 -> Flask | Opcional: Envia confirmação de que o comando foi executado. |
 
+💡 Dica: Quando quiser apagar as credenciais salvas da rede para conectar em outro `wi-fi` do mesmo local, segure o botão **reset** por `3 segundos`. O Ponto de Acesso (AP) do `wifimanager` ativará para se conectar a outra rede.
+
 ## Estrutura de Arquivos
 ```
 ├── Codigo_ESP32/Codigo_ESP32.ino    # Código C++ do Firmware (ESP32)
 ├── dependencias/
-    └── platformio.ini # Configuração do build e dependências do ESP32
-    └── requirements.txt # Lista de dependências Python
+    ├── platformio.ini      # Configuração do build e dependências do ESP32
+    └── requirements.txt    # Lista de dependências Python
 └── static/
     ├── js/main.js          # Lógica do Socket.IO e UI do cliente  
     ├── img/fluxograma.svg  # Fluxograma deste projeto
