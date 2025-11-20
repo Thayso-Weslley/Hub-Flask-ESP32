@@ -8,12 +8,12 @@
 // ======================================================================
 // --- CONFIGURAÇÕES DE APLICAÇÃO E PINAGEM ---
 // ======================================================================
-const char* socket_host = "192.168.207.187"; // colocar IP de conexão ao servidor WebHub
+const char* socket_host = "192.168.1.201"; // colocar IP de conexão ao servidor WebHub
 const uint16_t socket_port = 5000; // Porta host entre o Servidor Local e o ESP
-const char* deviceName = "Sala 0"; // Nome do ESP no WebHub
+const char* deviceName = "Sala 01"; // Nome do ESP no WebHub
 
 // --- Pinos de I/O ---
-#define RELAY_LAMP_PIN 23
+#define RELAY_LAMP_PIN 23   
 #define RELAY_COOLER_PIN 22
 
 // Pinos dos LEDs de Status (Seus Pinos Personalizados)
@@ -181,10 +181,9 @@ void setup() {
     Serial.println("\nInicializando ESP32 (WebSocket Puro - V8.1 - Reset Manual)...");
 
     // 1. Inicializa pinos I/O
-    pinMode(RELAY_LAMP_PIN, OUTPUT);
-    pinMode(RELAY_COOLER_PIN, OUTPUT);
-    digitalWrite(RELAY_LAMP_PIN, HIGH); // Relés OFF (Active LOW)
-    digitalWrite(RELAY_COOLER_PIN, HIGH);
+    // >>> MUDANÇA: Usar INPUT_PULLUP para garantir HIGH por padrão
+    pinMode(RELAY_LAMP_PIN, INPUT_PULLUP);
+    pinMode(RELAY_COOLER_PIN, INPUT_PULLUP);
 
     pinMode(LED_RED_PIN, OUTPUT);
     pinMode(LED_YELLOW_PIN, OUTPUT);
