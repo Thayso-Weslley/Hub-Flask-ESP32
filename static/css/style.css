@@ -9,27 +9,34 @@ body {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
-/* Este é o "Bloquinho" que o JavaScript irá criar dinamicamente 
-  para CADA ESP conectado.
-*/
+/* Bloquinho criado dinamicamente para cada ESP */
 .ESP-container {
-    background-color: #f9fafb; /* Um fundo levemente diferente */
+    background-color: #f9fafb;
     border: 1px solid #d1d5db; 
     padding: 1.5rem; 
-    border-radius: 0.75rem; /* Um pouco mais arredondado */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-    margin-bottom: 1rem; /* Espaçamento entre os bloquinhos */
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+                0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
 }
 
-/* Estilo base para o botão toggle (Mantido) */
+/* Container para os botões (Ligar + Agendar) */
+.device-actions {
+    display: flex;
+    gap: 0.75rem; /* Espaço entre os dois botões */
+    align-items: center;
+}
+
+/* Botão toggle (Ligar / Desligar) */
 .toggle-button { 
     transition: all 0.3s ease; 
-    min-width: 120px; /* Garante tamanho mínimo consistente */
+    min-width: 120px;
     padding: 1rem 1.5rem;
     font-size: 1rem;
     font-weight: 700;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                0 2px 4px -2px rgba(0, 0, 0, 0.06);
 }
 
 .toggle-button:hover { 
@@ -42,12 +49,64 @@ body {
     box-shadow: none;
 }
 
-/* Cor de fundo para o Log (Mantido) */
+/* Botão azul de Agendar */
+.schedule-button {
+    background-color: #0d6efd; /* Azul do Bootstrap */
+    color: white;
+    border: none;
+    padding: 1rem 1.5rem;
+    min-width: 120px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                0 2px 4px -2px rgba(0, 0, 0, 0.06);
+}
+
+.schedule-button:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-1px);
+}
+
+.schedule-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Cor de fundo do Log */
 #log-container { 
-    background-color: #1f2937; /* Cinza escuro para contraste */
-    color: #d1d5db; /* Texto claro */
+    background-color: #1f2937;
+    color: #d1d5db;
     font-size: 0.875rem;
     line-height: 1.25rem;
 }
 
-#log-container p { margin: 0; padding: 2px 0; }
+#log-container p { 
+    margin: 0; 
+    padding: 2px 0; 
+}
+
+.btn-save {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+    background-color: #16a34a; /* verde */
+    color: white;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: 0.2s;
+}
+
+.btn-save:hover {
+    background-color: #15803d; /* verde escuro */
+}
+
+.btn-update {
+    background-color: #2563eb !important; /* azul */
+}
+
+.btn-update:hover {
+    background-color: #1d4ed8 !important; /* azul escuro */
+}

@@ -1,7 +1,4 @@
-/*
- * Lógica Dinâmica do Frontend (V11)
- * Este script ouve o Hub e renderiza os "bloquinhos" do ESP32 dinamicamente.
- */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializa a conexão com o Hub
@@ -59,14 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Define o HTML interno do "bloquinho" (baseado no seu HTML estático)
             // (Note os IDs e onclicks dinâmicos)
             card.innerHTML = `
-                <!-- Status do Dispositivo (Agora dentro do card) -->
+                <!-- Status do Dispositivo -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 mb-6 rounded-lg transition duration-300 ${isOnline ? 'bg-green-50' : 'bg-red-50'}" id="status-card-${deviceName}">
                     <span class="text-lg font-semibold text-gray-700 mb-2 sm:mb-0">${deviceName} Status:</span>
                     <span id="esp-status-${deviceName}" class="px-4 py-1 font-bold rounded-full text-white shadow-md ${isOnline ? 'bg-green-600' : 'bg-red-600'}">${statusText}</span>
                 </div>
 
-                <!-- Botões de Controle -->
                 <div class="flex flex-col gap-4">
+
                     <!-- Lâmpada -->
                     <div class="bg-blue-50 rounded-lg p-4 shadow-md hover:shadow-lg transition flex justify-between items-center">
                         <div class="flex items-center">
@@ -78,9 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <p id="label-${deviceName}-lamp" class="text-sm text-gray-500">Relé 1: Desligado</p>
                             </div>
                         </div>
-                        <button id="btn-${deviceName}-lamp" class="toggle-button bg-red-600 text-white" 
-                                onclick="toggleDevice('${deviceName}', 'lamp')" 
-                                ${!isOnline ? 'disabled' : ''}>
+
+                        <button 
+                            id="btn-${deviceName}-lamp" 
+                            class="toggle-button bg-red-600 text-white"
+                            onclick="toggleDevice('${deviceName}', 'lamp')"
+                            ${!isOnline ? 'disabled' : ''}>
                             Ligar
                         </button>
                     </div>
@@ -96,14 +96,28 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <p id="label-${deviceName}-cooler" class="text-sm text-gray-500">Relé 2: Desligado</p>
                             </div>
                         </div>
-                        <button id="btn-${deviceName}-cooler" class="toggle-button bg-red-600 text-white" 
-                                onclick="toggleDevice('${deviceName}', 'cooler')" 
-                                ${!isOnline ? 'disabled' : ''}>
+
+                        <button 
+                            id="btn-${deviceName}-cooler" 
+                            class="toggle-button bg-red-600 text-white"
+                            onclick="toggleDevice('${deviceName}', 'cooler')"
+                            ${!isOnline ? 'disabled' : ''}>
                             Ligar
                         </button>
                     </div>
-                </div>
-            `;
+
+                    <!-- BOTÃO ÚNICO DE AGENDAMENTO PARA ESSE ESP -->
+                    
+                        <!-- Novo design para o botão de agendamento -->
+                        <button
+                            class="w-full bg-gray-200 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-md 
+                                hover:bg-blue-200 hover:text-blue-800 
+                                transition duration-300 ease-in-out"
+                            onclick="openScheduleModal(['${deviceName}'])">
+                            ⏱ Agendamento
+                        </button>
+                    </div>`;
+
             
             // Adiciona o bloquinho ao dashboard
             dashboardContainer.appendChild(card);

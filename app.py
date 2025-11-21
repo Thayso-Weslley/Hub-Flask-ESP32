@@ -1,3 +1,5 @@
+import time
+import json
 import os
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_socketio import SocketIO, emit
@@ -24,6 +26,22 @@ socketio = SocketIO(app,
 # A chave será o 'deviceName' (ex: "ESP-2C-0D-A7-58-FE-85")
 # ==============================================================================
 connected_devices = {}
+
+# ===========================
+# SEÇÃO DE AGENDAMENTOS (CRUD JSON)
+# ===========================
+AGENDAMENTOS_DIR = "agendamentos"
+os.makedirs(AGENDAMENTOS_DIR, exist_ok=True)
+
+def ensure_folder(path):
+    """Garante que a pasta exista."""
+    os.makedirs(path, exist_ok=True)
+
+
+def get_schedule_path(device, schedule_id):
+    """Retorna o caminho completo do arquivo de agendamento JSON."""
+    return os.path.join(AGENDAMENTOS_DIR, device, f"{schedule_id}.json")
+
 
 # --- Rotas HTTP (Autenticação - Sem Mudanças) ---
 @app.route('/')
@@ -133,7 +151,6 @@ def handle_esp_registration(data):
     # Transmite a lista ATUALIZADA para TODOS os navegadores
     emit('full_device_update', get_clean_device_list(), broadcast=True)
 
-
 @socketio.on('web_command')
 def handle_web_command(data):
     """
@@ -166,6 +183,85 @@ def handle_web_command(data):
     
     # Transmite a mudança de estado para TODOS os navegadores
     emit('full_device_update', get_clean_device_list(), broadcast=True)
+
+# ======================================================================
+# CRUD: API REST de Agendamentos em JSON
+# ======================================================================
+
+@app.route("/api/schedules/<device>", methods=["GET"])
+def api_list_schedules(device):
+    """Lista todos os agendamentos de um dispositivo."""
+    device_path = os.path.join(AGENDAMENTOS_DIR, device)
+
+    if not os.path.exists(device_path):
+        return [], 200
+
+    schedules = []
+    for file in os.listdir(device_path):
+        if file.endswith(".json"):
+            path = os.path.join(device_path, file)
+            with open(path, "r", encoding="utf-8") as f:
+                content = json.load(f)
+            content["id"] = file.replace(".json", "")
+            schedules.append(content)
+
+    return schedules, 200
+
+@app.route("/api/schedules", methods=["POST"])
+def api_add_schedule():
+    """Cria um novo agendamento (POST)."""
+
+    data = request.json
+    device = data.get("device_name")
+
+    if not device:
+        return {"success": False, "error": "device_name é obrigatório"}, 400
+
+    device_path = os.path.join(AGENDAMENTOS_DIR, device)
+    ensure_folder(device_path)
+
+    schedule_id = str(int(time.time()))
+
+    schedule_file = get_schedule_path(device, schedule_id)
+
+    with open(schedule_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+
+    return {"success": True, "id": schedule_id}, 201
+
+@app.route("/api/schedules/<schedule_id>", methods=["PUT"])
+def api_edit_schedule(schedule_id):
+    """Edita um agendamento (PUT)."""
+    
+    data = request.json
+    device = data.get("device_name")
+
+    if not device:
+        return {"success": False, "error": "device_name é obrigatório"}, 400
+
+    schedule_file = get_schedule_path(device, schedule_id)
+
+    if not os.path.exists(schedule_file):
+        return {"success": False, "error": "Agendamento não encontrado"}, 404
+
+    with open(schedule_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+
+    return {"success": True}, 200
+
+@app.route("/api/schedules/<schedule_id>", methods=["DELETE"])
+def api_delete_schedule(schedule_id):
+    """Remove um agendamento (DELETE)."""
+
+    # Procurar arquivo do agendamento em todos os dispositivos
+    for device in os.listdir(AGENDAMENTOS_DIR):
+        schedule_file = get_schedule_path(device, schedule_id)
+
+        if os.path.exists(schedule_file):
+            os.remove(schedule_file)
+            return {"success": True}, 200
+
+    return {"success": False, "error": "Agendamento não encontrado"}, 404
 
 
 # --- Execução do Servidor ---

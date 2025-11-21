@@ -1,0 +1,15 @@
+{
+    "device_name": "Sala 02",
+    "target": "lamp",
+    "state": "on",
+    "time": "12:18",
+    "days": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun"
+    ]
+}
