@@ -101,6 +101,7 @@ Na **primeira execução**, o ESP32 cria um Ponto de Acesso (AP). Conecte-se a e
 
 ## Estrutura de Arquivos
 ```
+├── agendamentos/       # Base de dados de agendamento de comando
 ├── Codigo_ESP32/Codigo_ESP32.ino    # Código C++ do Firmware (ESP32)
 ├── dependencias/
     ├── platformio.ini      # Configuração do build e dependências do ESP32
