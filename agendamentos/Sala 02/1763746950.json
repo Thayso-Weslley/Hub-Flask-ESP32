@@ -1,9 +1,0 @@
-{
-    "device_name": "Sala 02",
-    "target": "cooler",
-    "state": "off",
-    "time": "10:20",
-    "days": [
-        "mon"
-    ]
-}

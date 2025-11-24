@@ -8,7 +8,7 @@
 // ======================================================================
 // --- CONFIGURAÇÕES DE APLICAÇÃO E PINAGEM ---
 // ======================================================================
-const char* socket_host = "192.168.1.201"; // colocar IP de conexão ao servidor WebHub
+const char* socket_host = "192.168.X.XXX"; // colocar IP de conexão ao servidor WebHub
 const uint16_t socket_port = 5000; // Porta host entre o Servidor Local e o ESP
 const char* deviceName = "Sala 01"; // Nome do ESP no WebHub
 
